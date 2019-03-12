@@ -34,13 +34,29 @@ float pmt_analyzer(int runNum, float initialSig = -1.0, int run2 = 0, int run3 =
 						int run6 = 0, int run7 = 0, int run8 = 0, int run9 = 0, int run10 = 0){
 
 	// Define histogram numbers
-	initialSig = (float)(GetSignalFromRun(runNum));
 	Int_t binWidth = 1;
-	if (initialSig > 200.0) binWidth = 3;
-	if (initialSig > 300.0) binWidth = 4;
-	if (initialSig > 500.0) binWidth = 7;
 	const int MAX_BIN = 4096;
 	int adc_range = 1;
+
+	// Grab initial values from csv files or use defaults
+	Float_t initialPed = (float)(GetPedestalFromRun(runNum));
+	if (initialSig < 0.0) initialSig = (float)(GetSignalFromRun(runNum));
+	Float_t initialSigRms = (float)(GetSignalRmsFromRun(runNum));
+	if (initialPed < 0.0) {
+		if (runNum < 177) initialPed = 877.0;
+		else initialPed = 1298.0;
+	}
+	if (initialSig < 0.0) {
+		initialSig = 155.0;
+	}
+	if (initialSigRms < 0.0) {
+		initialSigRms = sqrt(initialSig);
+	}
+
+	// Update bin width depending on signal size and rms
+	if (initialSig > 200.0 || initialSigRms > 65.0) binWidth = 2;
+	if (initialSig > 300.0 || initialSigRms > 100.0) binWidth = 4;
+	if (initialSig > 500.0 || initialSigRms > 150.0) binWidth = 8;
 
 	// Define ADC channels used
 	int chanUpstream = 2;
@@ -68,21 +84,6 @@ float pmt_analyzer(int runNum, float initialSig = -1.0, int run2 = 0, int run3 =
                 h_QDC->SetBinContent(curBin, curVal / (sum * (float)(binWidth)));
                 h_QDC->SetBinError(curBin, sqrt(curVal) / (sum * (float)(binWidth)));
         }
-
-	// Grab initial values from csv files or use defaults
-	Float_t initialPed = (float)(GetPedestalFromRun(runNum));
-	initialSig = (float)(GetSignalFromRun(runNum));
-	Float_t initialSigRms = (float)(GetSignalRmsFromRun(runNum));
-	if (initialPed < 0.0) {
-		if (runNum < 177) initialPed = 877.0;
-		else initialPed = 1298.0;
-	}
-	if (initialSig < 0.0) {
-		initialSig = 155.0;
-	}
-	if (initialSigRms < 0.0) {
-		initialSigRms = sqrt(initialSig);
-	}
 	//TF1 *fit_gaus_ped = new TF1("fit_gaus_ped", "gaus", initialPed - 2.0, initialPed + 2.0);
 	//h_QDC->Fit(fit_gaus_ped, "RN", "");
 
@@ -123,9 +124,9 @@ float pmt_analyzer(int runNum, float initialSig = -1.0, int run2 = 0, int run3 =
 	fit_func->SetParLimits(0, 0.0, 1.0);
 	fit_func->SetParLimits(7, 0.0, 1.0);
 	fit_func->SetParLimits(8, 0.0, 1.0);
-	fit_func->SetParLimits(1, initialPed * 0.98, initialPed * 1.02);
-	fit_func->SetParLimits(5, initialSig * 0.9, initialSig * 1.1);
-	fit_func->SetParLimits(6, initialSigRms * 0.9, initialSigRms * 1.1);
+	fit_func->SetParLimits(1, initialPed - 5.0, initialPed + 5.0);
+	fit_func->SetParLimits(5, initialSig * 0.8, initialSig * 1.2);
+	fit_func->SetParLimits(6, initialSigRms * 0.8, initialSigRms * 1.2);
 
 	// Setup histogram for printing
         h_QDC->GetXaxis()->SetTitle("ADC channels");
