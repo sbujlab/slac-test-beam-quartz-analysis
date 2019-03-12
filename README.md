@@ -43,6 +43,13 @@ Or, alternately, you can make this change from the command line with:
    two PMTs recorded on their own ADC channel. 
  - This analyzer also takes in two signal inputs after the first run number.
 
+### A modified version of the analyzer is required for very large signal runs
+ - root -l 'pmt_analyzer_simple.c(318, -1.0, 1250, 2300)
+ - root -l 'pmt_analyzer_simple.c(int runNum, float initialSig = -1.0, int fit_min = 0, int fit_max = 0)
+ - This analyzer performs a simple gaussian fit to the pedestal and a simple gaussian fit 
+   to the signal. 
+ - The "fit_min" and "fit_max" parameters should encompass the pedestal and first PE peak.
+
 --------------------------------------------------------------------------
 
 ### A shell script has been created for analyzing all the tandem data in a loop

@@ -54,9 +54,11 @@ float pmt_analyzer(int runNum, float initialSig = -1.0, int run2 = 0, int run3 =
 	}
 
 	// Update bin width depending on signal size and rms
-	if (initialSig > 200.0 || initialSigRms > 65.0) binWidth = 2;
-	if (initialSig > 300.0 || initialSigRms > 100.0) binWidth = 4;
-	if (initialSig > 500.0 || initialSigRms > 150.0) binWidth = 8;
+	if (initialSig > 100.0 || initialSigRms > 35.0) binWidth = 2;
+	if (initialSig > 200.0 || initialSigRms > 65.0) binWidth = 4;
+	if (initialSig > 300.0 || initialSigRms > 100.0) binWidth = 8;
+	if (initialSig > 500.0 || initialSigRms > 150.0) binWidth = 40;
+	if (initialSig > 800.0 || initialSigRms > 200.0) binWidth = 20;
 
 	// Define ADC channels used
 	int chanUpstream = 2;
@@ -209,6 +211,7 @@ float pmt_analyzer(int runNum, float initialSig = -1.0, int run2 = 0, int run3 =
 	float nPE = sigout / onePEsig;
 	// Print out results and a copy of all inputs to check them
 	//printf("Run: %s\n", rootFile.c_str());
+	printf("Run:  %d\n", runNum);
 	printf("HV:  %d\n", hv);
 	printf("PMT: %d\n", pmt);
 	//printf("Detector:  %s\n", detector.c_str());
