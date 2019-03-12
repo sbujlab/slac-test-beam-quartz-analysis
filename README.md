@@ -6,6 +6,14 @@ This directory is for storing data recorded at SLAC for the benchmarking of Show
 
 ---------------------------------------------------------------------------
 
+First, before using the analyzer, you must open load_files.h, get to 
+line 43, and modify the file path pointing to your rootfiles directory.
+
+Or, alternately, you can make this change from the command line with:
+ -  sed -i "43s@rootfiles@/home/user/slacdir/rootfiles@" load_files.h
+
+---------------------------------------------------------------------------
+
 The quartz analysis macro is called pmt_analyzer.c 
 and can be called from command line:
  - root -l 'pmt_analyzer.c(177)'
