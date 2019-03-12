@@ -30,7 +30,7 @@ double poisson_peak_calculator(int n, double mu){
 
 // This function reads the PMT root file from a hard-coded directory and fits the distribution
 // to a Poisson convoluted with some gaussians and an exponential.
-float pmt_analyzer_tandem(int runNum, float initialSig = -1.0, int run2 = 0, int run3 = 0, int run4 = 0, int run5 = 0, int run6 = 0, int run7 = 0, int run8 = 0, int run9 = 0, int run10 = 0 ){
+float pmt_analyzer_tandem(int runNum, float initialSigUpstream = -1.0, float initialSigDownstream = -1.0, int run2 = 0, int run3 = 0, int run4 = 0, int run5 = 0, int run6 = 0, int run7 = 0, int run8 = 0, int run9 = 0, int run10 = 0 ){
 
 	// Define histogram numbers
 	Int_t binWidth = 1;
@@ -50,19 +50,27 @@ float pmt_analyzer_tandem(int runNum, float initialSig = -1.0, int run2 = 0, int
 	}
         
 	// Grab initial values from csv files or use defaults
-	Float_t initialMu = 0.1;
+	Float_t initialMu = 1.0;
         Float_t initialPed = (float)(GetPedestalFromRun(runNum));
-        if (initialSig < 0.0) initialSig = (float)(GetSignalFromRun(runNum));
-        Float_t initialSigRms = (float)(GetSignalRmsFromRun(runNum));
+        if (initialSigUpstream < 0.0) initialSigUpstream = (float)(GetSignalFromRun(runNum));
+        if (initialSigDownstream < 0.0) initialSigDownstream = (float)(GetDownstreamSignalFromRun(runNum));
+        Float_t initialSigRmsUpstream = (float)(GetSignalRmsFromRun(runNum));
+        Float_t initialSigRmsDownstream = (float)(GetDownstreamSignalRmsFromRun(runNum));
         if (initialPed < 0.0) {
                 if (runNum < 177) initialPed = 877.0;
                 else initialPed = 1298.0;
         }
-        if (initialSig < 0.0) {
-                initialSig = 155.0;
+        if (initialSigUpstream < 0.0) {
+                initialSigUpstream = 40.0;
         }
-        if (initialSigRms < 0.0) {
-                initialSigRms = sqrt(initialSig);
+        if (initialSigDownstream < 0.0) {
+                initialSigDownstream = 40.0;
+        }
+        if (initialSigRmsUpstream < 0.0) {
+                initialSigRmsUpstream = 8.0;
+        }
+        if (initialSigRmsDownstream < 0.0) {
+                initialSigRmsDownstream = 8.0;
         }
 
         // Create histogram
@@ -85,16 +93,6 @@ float pmt_analyzer_tandem(int runNum, float initialSig = -1.0, int run2 = 0, int
 	// Grab gain conversion factors for pmts and hv's used
 	float onePEsig_upstream = GetSignalFromPmtAndHV(pmt_upstream, hv);
 	float onePEsig_downstream = GetSignalFromPmtAndHV(pmt_downstream, hv);
-	float relative_gain = onePEsig_upstream / onePEsig_downstream;
-	if (relative_gain > 1.0) relative_gain = 1.0 / relative_gain;
-	if (pmt_upstream == 2) {
-		initialSig = initialSig * relative_gain;
-		initialSigRms = initialSigRms * relative_gain;
-	}
-	if (adc_range == 0) {
-		onePEsig_upstream = onePEsig_upstream * 8.00;
-		onePEsig_downstream = onePEsig_downstream * 8.00;
-	}
 	float nPE_upstream, nPE_downstream;
 	Double_t total_integral = 0.0;
 	string printString = "";
@@ -111,7 +109,7 @@ float pmt_analyzer_tandem(int runNum, float initialSig = -1.0, int run2 = 0, int
 
 	can->cd(1);
 	// Grab fit bounds from user-defined thresholds
-	low = qdc_upstream->FindFirstBinAbove(2) * binWidth - 20;
+	low = qdc_upstream->FindFirstBinAbove(150) * binWidth - 20;
 	high = qdc_upstream->FindLastBinAbove(2) * binWidth + 20;
 	printf("range: %d, %d\n", low, high);
 	
@@ -152,10 +150,10 @@ float pmt_analyzer_tandem(int runNum, float initialSig = -1.0, int run2 = 0, int
 	fit_func->SetParameter(0, 0.1);		// w
 	fit_func->SetParameter(1, initialPed);	// pedestal mean
 	fit_func->SetParameter(2, 2.0);		// pedestal rms
-	fit_func->SetParameter(3, 0.01);	// alpha
+	fit_func->SetParameter(3, 0.1);		// alpha
 	fit_func->SetParameter(4, initialMu);	// mu
-	fit_func->SetParameter(5, initialSig);	// signal mean
-	fit_func->SetParameter(6, initialSigRms); // signal rms
+	fit_func->SetParameter(5, initialSigUpstream);	// signal mean
+	fit_func->SetParameter(6, initialSigRmsUpstream); // signal rms
 	fit_func->SetParameter(7, 0.0);		// injected proportion
 	fit_func->SetParameter(8, 1.0);		// real porportion
 	
@@ -164,8 +162,8 @@ float pmt_analyzer_tandem(int runNum, float initialSig = -1.0, int run2 = 0, int
 	fit_func->SetParLimits(7, 0.0, 1.0); // inj
 	fit_func->SetParLimits(8, 0.0, 1.0); // real
 	fit_func->SetParLimits(1, initialPed - 5.0, initialPed + 5.0);
-	fit_func->SetParLimits(4, initialSig * 0.8, initialSig * 1.2);
-	fit_func->SetParLimits(5, initialSigRms * 0.8, initialSigRms * 1.2);
+	fit_func->SetParLimits(5, initialSigUpstream * 0.8, initialSigUpstream * 1.2);
+	fit_func->SetParLimits(6, initialSigRmsUpstream * 0.8, initialSigRmsUpstream * 1.2);
 
 	// Setup histogram for printing
         qdc_upstream->GetXaxis()->SetTitle("ADC channels");
@@ -251,7 +249,6 @@ float pmt_analyzer_tandem(int runNum, float initialSig = -1.0, int run2 = 0, int
 	printString += "3-PE: \t\t\t" + std::to_string(poisson_peak_calculator(3, muout)) + ", " + std::to_string(peak_ratio[3]) + "\n";
 	printString += "4-PE: \t\t\t" + std::to_string(poisson_peak_calculator(4, muout)) + ", " + std::to_string(peak_ratio[4]) + "\n";
 	printString += "------------------------------------------------------\n";
-return 17.29;
 
 	//////////////////////////////////////////////////////////////
 	//////// Perform these functions for downstream data 
@@ -259,7 +256,7 @@ return 17.29;
 
 	can->cd(2);
 	// Grab fit bounds from user-defined thresholds
-	low = qdc_downstream->FindFirstBinAbove(2) * binWidth - 20;
+	low = qdc_downstream->FindFirstBinAbove(150) * binWidth - 20;
 	high = qdc_downstream->FindLastBinAbove(2) * binWidth + 20;
 	printf("range: %d, %d\n", low, high);
 	
@@ -274,14 +271,7 @@ return 17.29;
                 qdc_downstream->SetBinError(curBin, sqrt(curVal) / (sum * (float)(binWidth)));
         }
 
-	initialPed = 1271;
-	if (pmt_downstream == 2) {
-		initialSig = initialSig * relative_gain;
-		initialSigRms = initialSigRms * relative_gain;
-	} else {
-		initialSig = initialSig / relative_gain;
-		initialSigRms = initialSigRms / relative_gain;
-	}
+	initialPed = 1268;
 
 	// Define fitting function
 	fit_func=new TF1("fit_func", the_real_deal_yx, 0, MAX_BIN, 11); 
@@ -311,8 +301,8 @@ return 17.29;
 	fit_func->SetParameter(2, 2.0);		// pedestal rms
 	fit_func->SetParameter(3, 0.01);	// alpha
 	fit_func->SetParameter(4, initialMu);	// mu
-	fit_func->SetParameter(5, initialSig);	// signal mean
-	fit_func->SetParameter(6, initialSigRms); // signal rms
+	fit_func->SetParameter(5, initialSigDownstream);	// signal mean
+	fit_func->SetParameter(6, initialSigRmsDownstream); // signal rms
 	fit_func->SetParameter(7, 0.0);		// injected proportion
 	fit_func->SetParameter(8, 1.0);		// real porportion
 	
@@ -321,8 +311,8 @@ return 17.29;
 	fit_func->SetParLimits(7, 0.0, 1.0); // inj
 	fit_func->SetParLimits(8, 0.0, 1.0); // real
 	fit_func->SetParLimits(1, initialPed - 5.0, initialPed + 5.0);
-	fit_func->SetParLimits(4, initialSig * 0.8, initialSig * 1.2);
-	fit_func->SetParLimits(5, initialSigRms * 0.8, initialSigRms * 1.2);
+	fit_func->SetParLimits(5, initialSigDownstream * 0.8, initialSigDownstream * 1.2);
+	fit_func->SetParLimits(6, initialSigRmsDownstream * 0.8, initialSigRmsDownstream * 1.2);
 
 	// Setup histogram for printing
         qdc_downstream->GetXaxis()->SetTitle("ADC channels");

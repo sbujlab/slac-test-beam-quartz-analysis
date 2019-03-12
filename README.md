@@ -13,20 +13,20 @@ Or, alternately, you can make this change from the command line with:
 
 ---------------------------------------------------------------------------
 
-## The quartz analysis macro pmt_analyzer.c can be called from command line:
+### The quartz analysis macro pmt_analyzer.c can be called from command line:
  - root -l 'pmt_analyzer.c(177)'
  - root -l 'pmt_analyzer.c(int runNum, float sigSize = -1.0)'
  - Using -1.0 as the initial signal size input causes the analysis
    to read in the initial signal value from values_by_run.csv.
 
-## The analyzer can handle up to 10 input run numbers:
+### The analyzer can handle up to 10 input run numbers:
  - root -l 'pmt_analyzer.c(177, 155.5, 178, 179, 180, 181, ...)'
  - root -l 'pmt_analyzer.c(177, -1.0, 178, 179, 180, 181, ...)'
  - All the data is loaded into a single histogram for the analysis.
  - This functionality introduces a bug somewhere that makes the number
    of events incorrect in the fit display.
 
-## Analyzer output: 
+### Analyzer output: 
  - Histogram of ADC distribution with 9-parameter fit including 
    the signal size above pedestal, signal width, electron rate, etc.
  - Detector resolution is printed.
@@ -36,10 +36,23 @@ Or, alternately, you can make this change from the command line with:
 
 --------------------------------------------------------------------------
 
-## A modified version of the analyzer is required for the tandem detectors:
+### A modified version of the analyzer is required for the tandem detectors:
  - root -l 'pmt_analyzer_tandem.c(177)'
+ - root -l 'pmt_analyzer_tandem.c(int runNum, float upstreamSig = -1.0, float downstreamSig = -1.0, int run2 = 0, int run3 = 0, ...)'
  - This analyzer works identically to pmt_analyzer.c while supporting
    two PMTs recorded on their own ADC channel. 
+ - This analyzer also takes in two signal inputs after the first run number.
+
+--------------------------------------------------------------------------
+
+### A shell script has been created for analyzing all the tandem data in a loop
+ - Execute the analyze_tandem.sh script with a list of runs to look at individually:
+    * ./analyze_tandem.sh 137 138 139 140 220 330 440 
+ - Execute the analyze_tandem.sh script with NO inputs to loop through all runs:
+    * ./analyze_tandem.sh
+ - While looping, the user must quit Root in order for the next fit to appear.
+ - There is a 0.5 second delay after quitting root to allow the user to kill the script:
+    * Simply press (Ctrl-c) after entering the (.q) command into Root.
 
 --------------------------------------------------------------------------
 
