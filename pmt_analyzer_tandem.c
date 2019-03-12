@@ -40,14 +40,9 @@ float pmt_analyzer_tandem(int runNum, float initialSigUpstream = -1.0, float ini
 	// Define ADC channels used and which PMTs
 	int chanUpstream = 2;
 	int chanDownstream = 0;
-	Int_t pmt_upstream, pmt_downstream;
-	if (runNum < 425) {
-		pmt_upstream = 2;
-		pmt_downstream = 1;
-	} else {
-		pmt_upstream = 1; 
-		pmt_downstream = 2;
-	}
+	Int_t pmt_upstream = GetPmtFromRun(runNum);
+	Int_t pmt_downstream = 2;
+	if (pmt_upstream == 2) pmt_downstream = 1;
         
 	// Grab initial values from csv files or use defaults
 	Float_t initialMu = 1.0;
@@ -229,6 +224,7 @@ float pmt_analyzer_tandem(int runNum, float initialSigUpstream = -1.0, float ini
 
 	// Print out results and a copy of all inputs to check them
 	printString = "\n\n=============================\nUPSTREAM ANALYSIS\n---------------------------\n";
+	printString += "Run:  " + std::to_string(runNum) + "\n";
 	printString += "HV:  " + std::to_string(hv) + "\n";
 	printString += "PMT: " + std::to_string(pmt_upstream) + "\n";
 	printString += "Ped: " + std::to_string(pedout) + " +/- " + std::to_string(pedrmsout) + "\n";
@@ -378,6 +374,7 @@ float pmt_analyzer_tandem(int runNum, float initialSigUpstream = -1.0, float ini
 
 	// Print out results and a copy of all inputs to check them
 	printString += "=============================\nDOWNSTREAM ANALYSIS\n---------------------------\n";
+	printString += "Run:  " + std::to_string(runNum) + "\n";
 	printString += "HV:  " + std::to_string(hv) + "\n";
 	printString += "PMT: " + std::to_string(pmt_downstream) + "\n";
 	printString += "Ped: " + std::to_string(pedout) + " +/- " + std::to_string(pedrmsout) + "\n";
