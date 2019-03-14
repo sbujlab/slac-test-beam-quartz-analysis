@@ -44,19 +44,19 @@ Or, alternately, you can make this change from the command line with:
  - This analyzer also takes in two signal inputs after the first run number.
 
 ### A modified version of the analyzer is required for very large signal runs
- - root -l 'pmt_analyzer_simple.c(318, -1.0, 1250, 2300)
- - root -l 'pmt_analyzer_simple.c(int runNum, float initialSig = -1.0, int fit_min = 0, int fit_max = 0)
+ - root -l 'pmt_analyzer_stack.c(318, -1.0, 1250, 2300)
+ - root -l 'pmt_analyzer_stack.c(int runNum, float initialSig = -1.0, int fit_min = 0, int fit_max = 0)
  - This analyzer performs a simple gaussian fit to the pedestal and a simple gaussian fit 
    to the signal. 
  - The "fit_min" and "fit_max" parameters should encompass the pedestal and first PE peak.
 
 --------------------------------------------------------------------------
 
-### A shell script has been created for analyzing all the tandem data in a loop
- - Execute the analyze_tandem.sh script with a list of runs to look at individually:
-    * ./analyze_tandem.sh 137 138 139 140 220 330 440 
- - Execute the analyze_tandem.sh script with NO inputs to loop through all runs:
-    * ./analyze_tandem.sh
+### A shell script has been created for analyzing data in a loop (automatically chooses macro)
+ - Execute the analyze_quartz.sh script with a list of runs to look at individually:
+    * ./analyze_quartz.sh 137 138 139 140 220 330 440 
+ - Execute the analyze_quartz.sh script with NO inputs to loop through all runs:
+    * ./analyze_quartz.sh
  - While looping, the user must quit Root in order for the next fit to appear.
  - There is a 0.5 second delay after quitting root to allow the user to kill the script:
     * Simply press (Ctrl-c) after entering the (.q) command into Root.

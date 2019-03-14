@@ -89,3 +89,11 @@ int GetDownstreamSignalFromRun(int run) {
 int GetDownstreamSignalRmsFromRun(int run) {
 	return GetIntegerFromRun(run, 9);
 }
+
+int GetLowFromRun(int run) {
+	return GetIntegerFromRun(run, 8);
+}
+
+int GetHighFromRun(int run) {
+	return GetIntegerFromRun(run, 9);
+}

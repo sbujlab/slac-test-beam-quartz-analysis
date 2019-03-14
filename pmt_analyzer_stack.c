@@ -30,7 +30,7 @@ double poisson_peak_calculator(int n, double mu){
 
 // This function reads the PMT root file from a hard-coded directory and fits the distribution
 // to a Poisson convoluted with some gaussians and an exponential.
-float pmt_analyzer_simple(int runNum, float initialSig = -1.0, int low = 0, int high = 0, int run2 = 0, int run3 = 0, int run4 = 0, int run5 = 0,
+float pmt_analyzer_stack(int runNum, float initialSig = -1.0, int low = 0, int high = 0, int run2 = 0, int run3 = 0, int run4 = 0, int run5 = 0,
 						int run6 = 0, int run7 = 0, int run8 = 0, int run9 = 0, int run10 = 0){
 
 	// Define histogram numbers
@@ -46,12 +46,10 @@ float pmt_analyzer_simple(int runNum, float initialSig = -1.0, int low = 0, int 
 		if (runNum < 177) initialPed = 877.0;
 		else initialPed = 1298.0;
 	}
-	if (initialSig < 0.0) {
-		initialSig = 155.0;
-	}
-	if (initialSigRms < 0.0) {
-		initialSigRms = sqrt(initialSig);
-	}
+	if (initialSig < 0.0) initialSig = 155.0;
+	if (initialSigRms < 0.0) initialSigRms = sqrt(initialSig);
+	if (low == 0) low = GetLowFromRun(runNum);
+	if (high == 0) high = GetHighFromRun(runNum);
 
 	// Update bin width depending on signal size and rms
 	if (initialSig > 100.0 || initialSigRms > 35.0) binWidth = 2;
@@ -136,10 +134,11 @@ float pmt_analyzer_simple(int runNum, float initialSig = -1.0, int low = 0, int 
 	gStyle->SetOptFit(1);
 	TGaxis::SetMaxDigits(3);
 	h_QDC->Draw("same");
+	can->SetLogy();
 
 	// Define results pointer 
-	TFitResultPtr ped_res = h_QDC->Fit(ped_func, "RS", "", low, initialPed + 120.0);
-	TFitResultPtr sig_res = h_QDC->Fit(sig_func, "RS", "", initialPed + 120.0, high);
+	TFitResultPtr ped_res = h_QDC->Fit(ped_func, "RS", "", low, initialPed + 40.0);
+	TFitResultPtr sig_res = h_QDC->Fit(sig_func, "RS", "", initialPed + 40.0, high);
 
 	// Create vector and grab return parameters
 	Double_t ped_back[3];
