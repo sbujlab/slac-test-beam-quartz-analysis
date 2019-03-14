@@ -40,7 +40,7 @@ TH1F* load_files(int adc_range = 1, int binWidth = 1, int chan = 2, int run0 = 0
 	for (int fileIndex = 0; fileIndex < count; fileIndex++) {
 
         	// Open .root data file
-		filename = Form("rootfiles/run_%d.root", runs[fileIndex]);
+		filename = Form("../gems/rootfiles/run_%d.root", runs[fileIndex]);
         	printf("Opening file %s\n", filename.c_str());
         	file = new TFile(filename.c_str());
         	if ( file->IsZombie() ) return h_QDC;
