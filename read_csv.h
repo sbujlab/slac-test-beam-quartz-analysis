@@ -34,6 +34,8 @@ int GetIntegerFromRun(int run, int index = 1) {
 	string runString, valueString;
 	ifstream file;
 	file.open("values_by_run.csv");
+	// Skip the first 8 lines
+	for (int i = 0; i < 8; i++) getline(file, runString);
 	while (file.good()) {
 		// Find the right line
 		getline(file, runString, ',');

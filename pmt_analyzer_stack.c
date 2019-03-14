@@ -135,6 +135,7 @@ float pmt_analyzer_stack(int runNum, float initialSig = -1.0, int low = 0, int h
 	TGaxis::SetMaxDigits(3);
 	h_QDC->Draw("same");
 	can->SetLogy();
+can->Print(Form("images/stack_%d.png", runNum));
 
 	// Define results pointer 
 	TFitResultPtr ped_res = h_QDC->Fit(ped_func, "RS", "", low, initialPed + 40.0);

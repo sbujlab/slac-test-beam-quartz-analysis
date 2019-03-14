@@ -195,6 +195,7 @@ float pmt_analyzer_tandem(int runNum, float initialSigUpstream = -1.0, float ini
         fis_from_fit_bg->SetNpx(2000);
 	fis_from_fit_bg->Draw("same");
 	can->Update();
+can->Print(Form("images/tandem_%d.png", runNum));
 
 	// Grab some stats info from the fit
 	chi = fit_func->GetChisquare();
