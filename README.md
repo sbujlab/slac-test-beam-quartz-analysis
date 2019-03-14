@@ -83,6 +83,8 @@ Or, alternately, you can make this change from the command line with:
    and signal rms for all runs.
  - This file makes it possible to get a good fit to all the data runs
    while only needing to enter the run number as input (user-friendly).
+ - For tandem runs, the last two values are downstream signal mean and rms.
+ - For stack runs with tungsten, the last two values are fit low and high bounds.
 
 ### signal_by_hv_and_pmt.csv:
  - This file holds the signal size for one PE
