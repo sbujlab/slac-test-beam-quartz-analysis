@@ -189,6 +189,7 @@ float pmt_analyzer(int runNum, float initialSig = -1.0, int run2 = 0, int run3 =
 	can->Update();
 	can->Print(Form("images/quartz_%d.png", runNum));
 
+
 	// Grab some stats info from the fit
 	Double_t chi = fit_func->GetChisquare();
 	Int_t ndf = fit_func->GetNDF();
