@@ -39,17 +39,17 @@ float pmt_analyzer_stack(int runNum, float initialSig = -1.0, int low = 0, int h
 	int adc_range = 1;
 
 	// Grab initial values from csv files or use defaults
-	Float_t initialPed = (float)(GetPedestalFromRun(runNum));
-	if (initialSig < 0.0) initialSig = (float)(GetSignalFromRun(runNum));
-	Float_t initialSigRms = (float)(GetSignalRmsFromRun(runNum));
+	Float_t initialPed = 1270.0;//(float)(GetPedestalFromRun(runNum));
+	if (initialSig < 0.0) initialSig = 420.0;//(float)(GetSignalFromRun(runNum));
+	Float_t initialSigRms = 85.0;//(float)(GetSignalRmsFromRun(runNum));
 	if (initialPed < 0.0) {
 		if (runNum < 177) initialPed = 877.0;
 		else initialPed = 1298.0;
 	}
 	if (initialSig < 0.0) initialSig = 155.0;
 	if (initialSigRms < 0.0) initialSigRms = sqrt(initialSig);
-	if (low == 0) low = GetLowFromRun(runNum);
-	if (high == 0) high = GetHighFromRun(runNum);
+	if (low == 0) low = 1250;//GetLowFromRun(runNum);
+	if (high == 0) high = 1750;//GetHighFromRun(runNum);
 
 	// Update bin width depending on signal size and rms
 	if (initialSig > 100.0 || initialSigRms > 35.0) binWidth = 2;
@@ -59,7 +59,8 @@ float pmt_analyzer_stack(int runNum, float initialSig = -1.0, int low = 0, int h
 	if (initialSig > 800.0 || initialSigRms > 200.0) binWidth = 20;
 
 	// Define ADC channels used
-	int chanUpstream = 2;
+	//int chanUpstream = 2;
+	int chanUpstream = 0;
 	int chanDownstream = 0;
 
         // Create histogram
@@ -114,7 +115,7 @@ float pmt_analyzer_stack(int runNum, float initialSig = -1.0, int low = 0, int h
 	
 	// Set bounds on parameters where necessary
 	ped_func->SetParLimits(1, initialPed - 5.0, initialPed + 5.0);
-	sig_func->SetParLimits(1, (initialPed + initialSig) * 0.8, (initialPed + initialSig) * 1.2);
+	sig_func->SetParLimits(1, (initialPed + initialSig) * 0.9, (initialPed + initialSig) * 1.1);
 	sig_func->SetParLimits(2, initialSigRms * 0.8, initialSigRms * 1.2);
 
 	// Setup histogram for printing
@@ -171,7 +172,7 @@ can->Print(Form("images/stack_%d.png", runNum));
 	int hv = GetHvFromRun(runNum);
 	float onePEsig = GetSignalFromPmtAndHV(pmt, hv);
 	if (adc_range == 0) onePEsig = onePEsig * 8.00;
-	float nPE = sigout / onePEsig;
+	float nPE = sigout * onePEsig;
 	// Print out results and a copy of all inputs to check them
 	//printf("Run: %s\n", rootFile.c_str());
 	printf("Run:  %d\n", runNum);
@@ -181,7 +182,7 @@ can->Print(Form("images/stack_%d.png", runNum));
 	//printf("Energy:  %.1f\n", energy);
 	printf("Ped: %.5f +/- %.5f\n", pedout, pedrmsout);
 	printf("Sig: %.5f +/- %.5f\n", sigout, sigrmsout);
-	printf("#PEs: %.5f +/- %.5f\n", nPE, sigrmsout / onePEsig);
+	printf("#PEs: %.5f +/- %.5f\n", nPE, sigrmsout * onePEsig);
 	printf("Resolution: %.5f\n", sigrmsout / sigout);
 	
 	return nPE;

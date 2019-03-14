@@ -54,14 +54,15 @@ float pmt_analyzer(int runNum, float initialSig = -1.0, int run2 = 0, int run3 =
 	}
 
 	// Update bin width depending on signal size and rms
-	if (initialSig > 100.0 || initialSigRms > 35.0) binWidth = 2;
-	if (initialSig > 200.0 || initialSigRms > 65.0) binWidth = 4;
-	if (initialSig > 300.0 || initialSigRms > 100.0) binWidth = 8;
-	if (initialSig > 500.0 || initialSigRms > 150.0) binWidth = 40;
-	if (initialSig > 800.0 || initialSigRms > 200.0) binWidth = 20;
+	if (initialSig > 100.0 || initialSigRms > 35.0) binWidth   = 2*1.5;
+	if (initialSig > 200.0 || initialSigRms > 65.0) binWidth   = 4*1.5;
+	if (initialSig > 300.0 || initialSigRms > 100.0) binWidth  = 8*1.5;
+	if (initialSig > 500.0 || initialSigRms > 150.0) binWidth = 15*1.5;
+	if (initialSig > 800.0 || initialSigRms > 200.0) binWidth = 20*1.5;
 
 	// Define ADC channels used
-	int chanUpstream = 2;
+	//int chanUpstream = 2;
+	int chanUpstream = 0;
 	int chanDownstream = 0;
 
         // Create histogram
@@ -73,7 +74,7 @@ float pmt_analyzer(int runNum, float initialSig = -1.0, int run2 = 0, int run3 =
 
 	// Grab fit bounds from user-defined thresholds
 	Int_t low = h_QDC->FindFirstBinAbove(2) * binWidth - 20;
-	Int_t high = h_QDC->FindLastBinAbove(2) * binWidth + 20;
+	Int_t high = h_QDC->FindLastBinAbove(2) * binWidth + -1*20;
 	printf("range: %d, %d\n", low, high);
 	
 	// If we are overflowing, just don't even run the fit
@@ -114,11 +115,14 @@ float pmt_analyzer(int runNum, float initialSig = -1.0, int run2 = 0, int run3 =
 	// Initialize the pedestal + rms, and signal + rms
 	fit_func->SetParameter(0, 0.1);
 	fit_func->SetParameter(1, initialPed);
-	fit_func->SetParameter(2, 2.0);
+	//fit_func->SetParameter(1, 1270.0);
+	fit_func->SetParameter(2, 5.0);
 	fit_func->SetParameter(3, 0.1);
 	fit_func->SetParameter(4, 1.0);
 	fit_func->SetParameter(5, initialSig);
 	fit_func->SetParameter(6, initialSigRms);
+	//fit_func->SetParameter(5, 420.0);
+	//fit_func->SetParameter(6, 85.0);
 	fit_func->SetParameter(7, 0.0);
 	fit_func->SetParameter(8, 1.0);
 	
@@ -127,8 +131,14 @@ float pmt_analyzer(int runNum, float initialSig = -1.0, int run2 = 0, int run3 =
 	fit_func->SetParLimits(7, 0.0, 1.0);
 	fit_func->SetParLimits(8, 0.0, 1.0);
 	fit_func->SetParLimits(1, initialPed - 5.0, initialPed + 5.0);
-	fit_func->SetParLimits(5, initialSig * 0.8, initialSig * 1.2);
-	fit_func->SetParLimits(6, initialSigRms * 0.8, initialSigRms * 1.2);
+	fit_func->SetParLimits(2, 1.0, 10.0);
+	//fit_func->SetParLimits(5, initialSig * 0.5, initialSig * 1.5);
+	//fit_func->SetParLimits(6, initialSigRms * 0.5, initialSigRms * 1.5);
+	fit_func->SetParLimits(5, initialSig * 0.75, initialSig * 1.25);
+	fit_func->SetParLimits(6, initialSigRms * 0.75, initialSigRms * 1.25);
+	//fit_func->SetParLimits(1, 1260.0, 1280.0);
+	//fit_func->SetParLimits(5, 400.0, 501.0);
+	//fit_func->SetParLimits(6, 50.0, 300.0);
 
 	// Setup histogram for printing
         h_QDC->GetXaxis()->SetTitle("ADC channels");
@@ -177,7 +187,7 @@ float pmt_analyzer(int runNum, float initialSig = -1.0, int run2 = 0, int run3 =
         fis_from_fit_bg->SetNpx(2000);
 	fis_from_fit_bg->Draw("same");
 	can->Update();
-can->Print(Form("images/quartz_%d.png", runNum));
+	can->Print(Form("images/quartz_%d.png", runNum));
 
 	// Grab some stats info from the fit
 	Double_t chi = fit_func->GetChisquare();
@@ -209,7 +219,7 @@ can->Print(Form("images/quartz_%d.png", runNum));
 	int hv = GetHvFromRun(runNum);
 	float onePEsig = GetSignalFromPmtAndHV(pmt, hv);
 	if (adc_range == 0) onePEsig = onePEsig * 8.00;
-	float nPE = sigout / onePEsig;
+	float nPE = sigout * onePEsig;
 	// Print out results and a copy of all inputs to check them
 	//printf("Run: %s\n", rootFile.c_str());
 	printf("Run:  %d\n", runNum);
@@ -219,7 +229,7 @@ can->Print(Form("images/quartz_%d.png", runNum));
 	//printf("Energy:  %.1f\n", energy);
 	printf("Ped: %.5f +/- %.5f\n", pedout, pedrmsout);
 	printf("Sig: %.5f +/- %.5f\n", sigout, sigrmsout);
-	printf("#PEs: %.5f +/- %.5f\n", nPE, sigrmsout / onePEsig);
+	printf("#PEs: %.5f +/- %.5f\n", nPE, sigrmsout * onePEsig);
 	printf("Resolution: %.5f\n", sigrmsout / sigout);
 	
 	// Calculate and measure the relative contributions to dist. from PE peaks
@@ -243,7 +253,7 @@ can->Print(Form("images/quartz_%d.png", runNum));
 	printf("------------------------------------------------------\n\n");
 
 	printf("### for runs_with_signal.csv\n");
-	printf("%d,%.2f,%.2f,%.2f,%.6f,%.6f\n\n", runNum, pedout, sigout, nPE, sigrmsout / sigout, muout);
+	printf("%d,%.2f,%.2f,%.2f,%.2f,%.6f,%.6f\n\n", runNum, pedout, sigout, sigrmsout, nPE, sigrmsout / sigout, muout);
 
 	return nPE;
 }
